@@ -1,61 +1,49 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: === CONFIGURATION ===
-:: Set full paths to your development tools below
-
-set "DELPHI_IDE=C:\Program Files (x86)\Embarcadero\Studio\16.0\bin\bds.exe"
-set "RPSERVER=C:\Eidos\RPServer-6.1\RPServer.exe"
-
-:: === FLAGS ===
-set "RUN_DELPHI=1"
-set "RUN_RPSERVER=1"
-
-:: === VALIDATION ===
-if not exist "%DELPHI_IDE%" (
-    echo [ERROR] Delphi IDE executable not found at "%DELPHI_IDE%".
-    echo Please check the path in the configuration section.
-    set "RUN_DELPHI=0"
+:: === LOAD CONFIGURATION ===
+if not exist "config.ini" (
+    echo [ERROR] Configuration file "config.ini" not found.
+    echo Please create the file with the required paths.
+    endlocal
+    exit /b 1
 )
 
-if not exist "%RPSERVER%" (
-    echo [ERROR] RPServer executable not found at "%RPSERVER%".
-    echo Please check the path in the configuration section.
-    set "RUN_RPSERVER=0"
-)
+:: Initialize counter for successful processes
+set "SUCCESS_COUNT=0"
 
-:: === CHECK IF PROGRAMS ARE ALREADY RUNNING ===
-if "%RUN_DELPHI%"=="1" (
-    echo Checking if Delphi IDE is already running...
-    tasklist | find /i "bds.exe"
-    if !errorlevel!==0 (
-        echo Delphi IDE is already running.
+:: === PROCESS CONFIGURATION ===
+for /f "tokens=1,2 delims==" %%A in (config.ini) do (
+    :: Validate if the executable exists
+    if not exist "%%B" (
+        echo [ERROR] %%A executable not found at "%%B".
+        echo Please check the path in the configuration file.
+        set "RUN_%%A=0"
     ) else (
-        echo Starting Delphi IDE...
-        start "" "%DELPHI_IDE%"
-        if %errorlevel%==0 (
-            echo Delphi IDE launched successfully.
+        set "RUN_%%A=1"
+    )
+
+    :: Check if the program is already running
+    if "!RUN_%%A!"=="1" (
+        echo Checking if %%A is already running...
+        tasklist | find /i "%%~nB.exe" >nul
+        if !errorlevel!==0 (
+            echo %%A is already running.
         ) else (
-            echo [ERROR] Failed to launch Delphi IDE.
+            echo Starting %%A...
+            start "" "%%B"
+            timeout /t 2 >nul
+            tasklist | find /i "%%~nB.exe" >nul
+            if !errorlevel!==0 (
+                echo %%A launched successfully.
+                set /a SUCCESS_COUNT+=1
+            ) else (
+                echo [ERROR] Failed to launch %%A.
+            )
         )
     )
 )
 
-if "%RUN_RPSERVER%"=="1" (
-    echo Checking if RPServer is already running...
-    tasklist | find /i "RPServer.exe"
-    if !errorlevel!==0 (
-        echo RPServer is already running.
-    ) else (
-        echo Starting RPServer...
-        start "" "%RPSERVER%"
-        if %errorlevel%==0 (
-            echo RPServer launched successfully.
-        ) else (
-            echo [ERROR] Failed to launch RPServer.
-        )
-    )
-)
-
-echo All environments launched successfully.
+echo All environments processed successfully.
+echo Total processes successfully run: !SUCCESS_COUNT!
 endlocal
