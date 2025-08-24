@@ -17,6 +17,13 @@ Ideal for developers, sysadmins, and tinkerers who want consistent environment s
 
 Clone the repository:
 
-```bash
 git clone https://github.com/aleksandrberesov/AutomateStartupBashScript.git
 cd AutomateStartupBashScript
+
+🖥️ Running on Windows (CMD & PowerShell)
+
+▶️ Run via CMD
+EnviromentStartupWinProcedure.bat example_config.ini
+
+▶️ Run via PowerShell
+cmd /c "EnviromentStartupWinProcedure.bat example_config.ini"
