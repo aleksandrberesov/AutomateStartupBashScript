@@ -1,6 +1,6 @@
 # 🚀 AutomateStartupBashScript
 
-A lightweight, modular Bash script designed to automate startup tasks. 
+A modular Bash script designed to automate startup tasks. 
 Ideal for developers, sysadmins, and tinkerers who want consistent environment setup across reboots or deployments.
 
 ---
