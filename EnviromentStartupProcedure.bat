@@ -1,10 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: === CONFIGURATION FILE ===
+set "CONFIG_FILE=%~1"
+if "%CONFIG_FILE%"=="" set "CONFIG_FILE=config.ini"
+
 :: === LOAD CONFIGURATION ===
-if not exist "config.ini" (
-    echo [ERROR] Configuration file "config.ini" not found.
-    echo Please create the file with the required paths.
+if not exist "%CONFIG_FILE%" (
+    echo [ERROR] Configuration file "%CONFIG_FILE%" not found.
+    echo Please provide a valid configuration file as a parameter or create "config.ini".
     endlocal
     exit /b 1
 )
@@ -13,7 +17,7 @@ if not exist "config.ini" (
 set "SUCCESS_COUNT=0"
 
 :: === PROCESS CONFIGURATION ===
-for /f "tokens=1,2 delims==" %%A in (config.ini) do (
+for /f "tokens=1,2 delims==" %%A in (%CONFIG_FILE%) do (
     :: Validate if the executable exists
     if not exist "%%B" (
         echo [ERROR] %%A executable not found at "%%B".
@@ -32,7 +36,7 @@ for /f "tokens=1,2 delims==" %%A in (config.ini) do (
         ) else (
             echo Starting %%A...
             start "" "%%B"
-            timeout /t 2 >nul
+            ping 127.0.0.1 -n 1 -w 500 >nul
             tasklist | find /i "%%~nB.exe" >nul
             if !errorlevel!==0 (
                 echo %%A launched successfully.
